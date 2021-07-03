@@ -1,0 +1,36 @@
+apiVersion: v1
+# A Persistent Volume Claim is not an actual instance of storage
+# a volume claim is something that we are going to attach to a pod config
+# hand pod config to k8s which sees that storage option, see's that volume claim
+# and is going to either find a 
+# "Statically provisioned Persistent Volume" or a "Dynamically provisoned Persistent Volume"
+# to meet the requirements of that claim
+
+kind: PersistentVolumeClaim
+metadata:
+  name: database-persistent-volume-claim
+spec:
+# 3 types of access modes 
+
+# 1) ReadWriteOnce -> can be used by a SINGLE NODE (instance of storage like a slice of your hard-drive that can be used by a single node at a time)
+# 2) ReadOnlyMany -> MULTIPLE NODES can READ from this (at same time)
+# 3) ReadWriteMany -> Can be READ AND WRITTEN to by MANY NODES (at same time)
+
+# Now, again, I want to really, really highlight the fact that the access mode that we put in right
+# here says if you attach me to a pod config and then hand me off to K8s, K8s is
+# going to have to find an instance of storage that supports this access mode.
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+  # storageClassName
+# kubectl get storageclass
+# hostpath (default)   docker.io/hostpath   Delete          Immediate           false                  30h
+# kubectl describe storageclass
+
+# So long story short here, what I'm trying to tell you is that when you ask k8s for some amount
+# of storage on your local machine, it's just going to take a slice of your hard drive.
+# When you are in a cloud environment, it's going to choose one of these default options for you unless
+# you very specifically tell it to use something else for most applications.

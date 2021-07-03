@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels: 
+      component: web
+      # selector and the label inside the template is how the deployment is going to indetify all the different pods is supposed to manage
+  template: 
+    metadata:
+      labels:
+        component: web
+    spec: 
+    # specify all the different containers that are going to run inside this pod
+      containers:
+        - name: client
+          image: stephengrider/multi-client
+          ports:
+            - containerPort: 3000
+
+
+
+# Object Types
+# Pods -> Runs one or more closely related Containers
+# Services -> Sets up networking in a Kubernetes Cluster
+#   - ClusterIP -> Exposes a set of pods to other objects in the cluster 
+        # (more restrictive form of networking than NodePort) Allows any other object inside of the cluster to access the ClusterIP that the object is pointing at
+        # but nobody from the outside world can access the object that the service is pointing to IMAGE NodePort V ClusterIP module
+#   - NodePort -> Exposes a set of pods to the outside world (only good for dev purposes!!!)
+#   - LoadBalancer
+#   - Ingress

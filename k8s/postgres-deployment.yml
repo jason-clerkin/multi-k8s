@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec: 
+      # OK, so this right here is what sets up the request on the pod to reach out to k8s and say I need
+      # some type of long term storage that meets all the requirements that are laid out inside of this 
+      # database-persistent-volume-claim object
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+          # default port for postgres 
+            - containerPort: 5432 
+          # So this is going to say, hey, all right, we just got access to the storage and here's how I want
+          # it to be used inside of my container.
+          volumeMounts:
+          # an array as can have multiple mounts on a single container
+          # right here is the most important part:
+              # Same name as -> spec: volumes: name
+            - name: postgres-storage
+            # We're then going to put in a mount path, the Mount Path is designating where inside the container this
+            # store should be made available.
+            # default storage location for postgres
+              mountPath: /var/lib/postgresql/data
+              # additional config just for postgres -> this folder is nested inside of a folder called Postgres, inside the persistent volume.
+              subPath: postgres
+          env:
+          # Over-write post gres default password
+            - name: POSTGRES_PASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
+
+
+# NB
+# Declarative - feed config to K8s -> figures out some migration path to get current state to desired state
+
+# A controller in K8s is any type
+# of object that constantly works to make some desired state a reality inside of our cluster.
+
+# Deployment is a type of controller
+
+# config file has a desired state
+
+
+# So the big takeaway right here, the only thing I want you to understand right now is that you and I
+# are going to create something called an ingress config, which is going to be a set of routing rules.
+# We're going to feed it into kubectl, which is going to create this ingress controller and the ingress
+# controllers job is to look at the ingress config or that set of routing rules and make that a reality.
+# Ingresss controller has to create some infrastructure inside of our cluster to make sure that we're actually
+# obeying those routing rules.
+# And so the Ingress controller is going to make, again, something that accepts incoming traffic.

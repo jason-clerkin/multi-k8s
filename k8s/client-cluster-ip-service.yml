@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-cluster-ip-service
+# configure the way the service behaves
+spec:
+# type of service
+  type: ClusterIP
+# target client-deployment -> {template: metadata: labels: component: web}
+  selector:
+    component: web
+  # configure the differnent ports that the Cluster IP Service are going to expose and be available on
+  ports: 
+    # same convention as NodePort -> port; targePort; nodePort
+    # no nodePort for ClusertIP as not accessible from the outside world
+    # so only port -> determine how other pods/other objects inside cluster are going to access the pod that we are governing asccess to
+    # targePort -> is going to be the port on the target pod that we are providing access to
+    
+    # you can get access to the port inside the container (target port) by hitting 'port' on the service (get access to)
+    # no good reason to mismatch here or re-direct
+    - port: 3000
+      targetPort: 3000
+
+
+

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      # key/value pair
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: stephengrider/multi-server
+          ports:
+            - containerPort: 5000
+          env: 
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: postgres
+            # very specific as our copy of multi-server is going to be looking for env variale of PGPASSWORD
+            - name: PGPASSWORD
+              valueFrom: 
+                secretKeyRef:
+                  name: pgpassword
+  
+                  key: PGPASSWORD
+
+# Ingress
+
+# Question
+# So at this point, we said, oh, yeah, we're actually using this load balancer service and the load
+# balancer service is getting traffic eventually into an engine pot.
+# So why oh, why would we not just do the stuff manually to a degree, know why are we going to go through
+# all this extra setup of this ingress stuff and the ingress config and a whole bunch of additional set
+# up on top of that when we could take a much more straightforward and simplistic approach, something
+# like this right here.
+# Why do we not just set up our own load balancer service manually?
+# That points to our own custom copy of nginx.
+
+# Well, the reason that we are still going to make use of ingress and Dynex, as opposed to setting the
+# Stutman stuff up manually, is that when you make use of the Engine X Ingress project, it actually
+# has a bunch of code added into it that is very much aware of the fact that is operating inside of a
+# k8s cluster.
+
+# Incoming request bypasses ClusterIP and hits pods directly
+# The reason that this is done is to allow for features like, say, sticky sessions, which is a reference
+# to the fact that we sometimes want to make sure that if one user sends to request to our application,
+# we want to make sure that both those requests go to the exact same server.

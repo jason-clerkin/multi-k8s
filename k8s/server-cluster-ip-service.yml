@@ -1,0 +1,14 @@
+apiVersion: v1
+# ot Cluser IP service that is going to governs/manage access to out running Express API
+kind: Service
+metadata:
+  name: server-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: server
+  ports:
+    - port: 5000
+      targetPort: 5000
+
+      

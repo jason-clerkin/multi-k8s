@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1beta1
+# UPDATE THE API
+kind: Ingress
+metadata:
+  name: ingress-service
+  # kind of higher level configuration around the ingress object that it gets created
+  annotations:
+    # So this configuration rule right here is essentially telling K8s that we want to create a ingress controller based on the nginx project.
+    kubernetes.io/ingress.class: nginx
+    # So this additional annotation right here, again, this is going to configure how the actual copy of nginx behaves, 
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    # this rule in particular says that if we end up matching a root like API right here after deciding to send it to the server. /api remove the /api -> Server
+    # So we had decided to remove these API out of the incoming request just so that we did not have to write the API on every different route on the server itself. (Back in Docker Modules)
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+# rules -> below comment
+  rules:
+    - http:
+        paths:
+        # the request has a path of "/"
+        # then send that request to whatever set of pods are governed by the service of "client-cluster-ip-service"
+          - path: /?(.*)
+            backend:
+              serviceName: client-cluster-ip-service
+              servicePort: 3000
+        # the reequest has a path of '/api'->remove the /api from request
+         # leading /api then send that request to whatever set of pods are governed by the service of "server-cluster-ip-service"
+          - path: /api/?(.*)
+            backend:
+              serviceName: server-cluster-ip-service
+              servicePort: 5000
+
+# So our rules are saying that there are two possible paths that we can match traffic to.
+
+# If someone ever comes to the path of just / by itself or any route that looks like / followed by anything
+# besides API, then we want to send that request to whatever set of ports are governed by the service
+# of client cluster IP service.
+
+# And again, we just refer to the name of that other service as we are designated inside of our client
+# cluster IP service file.
+
+# Then if a request came in with a leading route name of API, we wanted to to instead send it to the
+# set of of parts that are governed or managed by the server cluster IP service.
+
+# So essentially, we're setting up the exact same relationship that you just saw in this diagram right
+# here (Creating the Ingress Configuration Module)
+
+# The Engine X configuration that we're putting together is going to send all this incoming traffic to
+# either the MultiClient set of ports governed by this cluster IP service or the multiservice set of pods
+# governed by this cluster IP service.
+
+# NB
+# We are using ingress-nginx(a community led project) not kubernetes-ingress (a projrect led by the complany nginx)
+# github.com/kubernetes/ingress-nginx
+# Setup of ingress-nginx changes depending on your envrironment (local, GC, AWS, Azure)
+
+# Controller - works to get a current state (config files feed to cli) -> desired state inside of the cluster
+# Ingress routing rules to get traffic to services -> controller for our Ingress (constantly works to make sure these routing rules are setup)
+
+# Traffic (someting that accepts incoming traffic) -> Node (ingress config (feed to deployment) -> ingress controller-> something that accepts incoming traffic -> services)
+
+# sticky sessions - why are makign use of ingress project (one example of extra features)
+
+# ConfigMap is some object that hold amount of configuration that can be used throughout our cluster 
+
+# namespace - isolate the different resources created inside k8s cluster
