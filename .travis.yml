@@ -24,3 +24,12 @@ before_install:
   # authorization with Google Cloud or this cloud SDK we have until it hey, who's this is who we are.
   # activate-service-account is equivalent to the entire IAM system in AWS we set up for permissions/credentials
   - gcloud auth activate-service-account --key-file service-account.json
+  - gcloud config set project multi-k8s-318714
+  - gcloud config set compute/zone europe-central2-a
+  - gcloud container clusters get-credentials multi-cluster
+  - echo "$DOCKER_PASSSWORD" | docker login - "$DOCKER_USERNAME" --password-stdin
+  - docker build -t jasonclerkin/react-test -f ./client/Dockerfile.dev ./client
+
+  #  define how to run test
+  script:
+  - docker run -e CI=true jasonclerkin/react-test npm test

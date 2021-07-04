@@ -4,7 +4,7 @@ metadata:
   name: postgres-cluster-ip-service
 spec:
 # 4 Types of service
-  # 1) ClusterIP -> Expses a set of pods to other objects in the cluster
+  # 1) ClusterIP -> Exposes a set of pods to other objects in the cluster
   # 2) NodePort -> Exposes a set of pods to the outside world (only good for dev purposes!!!)
   # 3) LoadBalancer -> Legacy way of getting network traffic into a cluster
   # 4) Ingess - > Exposes a set of services to the outside world
