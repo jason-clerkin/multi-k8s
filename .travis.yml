@@ -1,0 +1,26 @@
+# making use of docker
+sudo: required
+# we require the docker service to be pre-installed as soon as we try to run our build
+# as we need travis to buid our images and run the test container
+services:
+  - docker
+# before install flag
+before_install:
+# travis login --github-token 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 --pro
+# travis encrypt-file service-account.json -r jason-clerkin/multi-k8s --pro
+  - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+# download and install the google sdk (from outside world)
+# left:download google sdk right: install locally on our little instance assigned to us from travis ci
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+# look at the default install directory of google cloud sdk - $HOME/google-cloud-sdk
+# and it's going to source the file path.bash.inc
+# Essentially, that just means that there are some configuration that's going to modify our shell inside
+# of Travis S.I inside this file and we're going to apply that additional configuration through the source
+# Basically run these two commands and it's going to set up Google Cloud locally
+# on your machine for you.
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  # install and update Cube ctl inside of our travis environment.
+  - gcloud components update kubectl
+  # authorization with Google Cloud or this cloud SDK we have until it hey, who's this is who we are.
+  # activate-service-account is equivalent to the entire IAM system in AWS we set up for permissions/credentials
+  - gcloud auth activate-service-account --key-file service-account.json
